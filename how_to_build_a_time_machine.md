@@ -1,18 +1,12 @@
 ---
-title: "My wonderful presentation"
-author: "Alexey Gumirov"
-institute: "My home office"
-topic: "Pandoc how-to"
-theme: "Frankfurt"
-colortheme: "beaver"
+title: "How to build a time machine (with Git)"
+author: "Paul Wang"
+theme: "Antibes"
+colortheme: "default"
 fonttheme: "professionalfonts"
-mainfont: "Hack Nerd Font"
-fontsize: 11pt
-urlcolor: red
+fontsize: 12pt
 linkstyle: bold
 aspectratio: 169
-titlegraphic: img/aleph0.png
-logo: img/aleph0-small.png
 date:
 section-titles: false
 toc: true
