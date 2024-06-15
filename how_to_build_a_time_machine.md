@@ -1,5 +1,5 @@
 ---
-title: "How to build a time machine (with Git)"
+title: "How to Build a Time Machine (with Git)"
 author: "Paul Wang"
 theme: "Antibes"
 colortheme: "default"
@@ -7,292 +7,72 @@ fonttheme: "professionalfonts"
 fontsize: 12pt
 linkstyle: bold
 aspectratio: 169
-date:
-section-titles: false
+date: 2024 July
+section-titles: true
 toc: true
 ---
-
-# General information
-
-## Themes, fonts, etc.
-
-- I use default **pandoc** themes.
-- This presentation is made with **Frankfurt** theme and **beaver** color theme.
-- I like **professionalfonts** font scheme. 
-
-## Links
-
-- Matrix of beamer themes: [https://hartwork.org/beamer-theme-matrix/](https://hartwork.org/beamer-theme-matrix/)
-- Font themes: [http://www.deic.uab.es/~iblanes/beamer_gallery/index_by_font.html](http://www.deic.uab.es/~iblanes/beamer_gallery/index_by_font.html)
-- Nerd Fonts: [https://nerdfonts.com](https://nerdfonts.com)
-
-# Formatting
-## Text formatting
-
-Normal text.
-*Italic text* and **bold text**.
-~~Strike out~~ is supported.
-
-## Notes
-
-> This is a note.
-> > Nested notes are not supported.
-> And it continues.
-
-## Blocks
-
-### This is a block A
-
-- Line A
-- Line B
-
-### 
-
-New block without header.
-
-### This is a block B.
-
-- Line C
-- Line D
-
-## Listings
-
-Listings out of the block.
-
-```sh
-#!/bin/bash
-echo "Hello world!"
-echo "line"
-```
-### Listings in the block.
-
-```sh
-#!/bin/bash
-echo "Hello world!"
-echo "line"
-```
-
-## Table
-
-**Item** | **Description** | **Q-ty**
-:--------|-----------------:|:---:
-Item A | Item A description | 2
-Item B | Item B description | 5
-Item C | N/A | 100
-
-## Single picture 
-
-This is how we insert picture. Caption is produced automatically from the alt text.
-
-```
-![Aleph 0](img/aleph0.png) 
-```
-
-![Aleph 0](img/aleph0.png) 
-
-## Two or more pictures in a raw
-
-Here are two pictures in the raw. We can also change two pictures size (height or width).
-
-###
-```
-![](img/aleph0.png){height=10%}\ ![](img/aleph0.png){height=30%} 
-```
-
-![](img/aleph0.png){ height=10% }\ ![](img/aleph0.png){ height=30% }
-
-## Lists
-
-1. Idea 1
-2. Idea 2
-	- genius idea A
-	- more genius 2
-3. Conclusion
-
-
-## Two columns of equal width
-
-::: columns
-
-:::: column
-
-Left column text.
-
-Another text line.
-
-::::
-
-:::: column
-
-- Item 1.
-- Item 2.
-- Item 3.
-
-::::
-
-:::
-
-## Two columns of with 40:60 split
-
-::: columns
-
-:::: {.column width=40%}
-
-Left column text.
-
-Another text line.
-
-::::
-
-:::: {.column width=60%}
-
-- Item 1.
-- Item 2.
-- Item 3.
-
-::::
-
-:::
-
-## Three columns with equal split
-
-::: columns
-
-:::: column
-
-Left column text.
-
-Another text line.
-
-::::
-
-:::: column
-
-Middle column list:
-
-1. Item 1.
-2. Item 2.
-
-::::
-
-:::: column
-
-Right column list:
-
-- Item 1.
-- Item 2.
-
-::::
-
-:::
-
-## Three columns with 30:40:30 split
-
-::: columns
-
-:::: {.column width=30%}
-
-Left column text.
-
-Another text line.
-
-::::
-
-:::: {.column width=40%}
-
-Middle column list:
-
-1. Item 1.
-2. Item 2.
-
-::::
-
-:::: {.column width=30%}
-
-Right column list:
-
-- Item 1.
-- Item 2.
-
-::::
-
-:::
-
-## Two columns: image and text
-
-::: columns
-
-:::: column
-
-![](img/aleph0.png){height=50%}
-
-::::
-
-:::: column
-
-Text in the right column.  
-
-List from the right column:
-
-- Item 1.
-- Item 2.
-::::
-
-:::
-
-## Two columns: image and table
-
-::: columns
-
-:::: column
-
-![](img/aleph0.png){height=50%}
-
-::::
-
-:::: column
-
-| **Item** | **Option** |
-|:---------|:----------:|
-| Item 1   | Option 1   |
-| Item 2   | Option 2   |
-
-::::
-
-:::
-
-## Fancy layout
-
-### Proposal
-
-- Point A
-- Point B
-
-::: columns
-
-:::: column
-
-### Pros
-
-- Good
-- Better
-- Best
-
-::::
-
-:::: column
-
-### Cons
-
-- Bad
-- Worse
-- Worst
-
-::::
-
-:::
-
-### Conclusion
-
-- Let's go for it!
-- No way we go for it!
+# Setting the Scene
+## Setting the Scene
+
+- Today's talk is **not** about specific commands / code.
+- The goal is to show Git's elegant design, and demystify how it works.
+- Reference will be included at the end on how to get specific things done, for those interested.
+
+# A Typical Pickle
+## A Typical Pickle
+
+- Alice was working on a new feature for her project.
+- She was 42% done when
+	- Her boss, Bob, sent her a message on Teams.
+	- There was an urgent bug in the code that needs fixing now.
+- Alice wanted switch gear to patch the bug but
+	- she doesn't want to give up her *WIP* feature. However, the feature code is not in a working state.
+- What to do?
+
+## Scenario #1: No Version Control
+
+- Perhaps Alice copied the files before starting working on the new feature.
+	- Save the feature works into a "feature" copy.
+	- Find the newest clean copy (without the feature but one that contains the bug).
+	- Make another copy, "bug_fix", of it.
+	- Patch the bug.
+	- Email everyone about the fix, and where to get the latest bug-free copy.
+	- Go back to the "feature" copy.
+	- Try to merge the WIP feature implementation onto the "bug_fix" copy.
+
+## Scenario #1: No Version Control
+- There are quite a few pitfalls with this approach:
+	- One is out of luck if there wasn't a copy with the desired state.
+	- This will be slow/space-consuming if you have a lot of files.
+	- This is also dangerous as one might overwrite the wrong file.
+	- It is hard to make sure that the copies were merge cleanly.
+	- It is impossible to coordinate these works between two or more persons, or to take over from another person.
+	- It is impossible to remember what happened after a few months.
+
+# What is Version Control System?
+## What is Version Control System?
+
+- Version control is a system that records changes to a file or set of files over time so that one can recall specific versions later.
+- Using a VCS also generally means that if you screw things up or lose files, you can easily recover.
+- It allows code archaeology (when was the bug introduced? / how was it fixed? / how has this function evolved? / … ).
+- More complex workflows are built upon it (collaboration, permission, code review, and releasing).
+
+## What makes Git a Unique VCS?
+
+- Git is the most popular VCS. It is used by most code platforms (Github / Gitlab / Bitbucket) and open-source projects.
+- It was developed in 2005 to move the Linux Kernel maintenance away from propriety VCS. 
+- Its design emphasizes:
+    - **Speed**
+    - **Strong support for non-linear development (thousands of parallel branches)**
+    - **Data Integrity** (once added, hard to lose)
+    - **Simplicity**
+    - Fully distributed
+    - Ability to handle large project efficiently (speed and data size)
+
+# Time Machine from Scratch
+## What is a Commit?
+## Pickle Revisited
+## Branching to the Rescue
+## What is a Branch?
+## Pointer (and more Pointer)
+## Pickle Re-revisited
