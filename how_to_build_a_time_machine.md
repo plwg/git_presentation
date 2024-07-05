@@ -7,17 +7,17 @@ date: 2024 July
 
 - Today's talk is **not** about specific commands / code.
 
-- The goal is to talk about Git's design decision, and from there understand how we should use it 
+- The goal is to talk about Git's design decision, and from there understand how we should use it.
 
-- Things might be a bit dry at the beginning but more visual later.
+- We will start with a scenario, then things will get visual and technical.
 
 # A Typical Pickle
 
 - Alice was working on a new feature for her project.
 - She was 42% done when
 	- Her boss, Bob, sent her a message on Teams.
-	- There was an urgent bug in the code that needs fixing now.
-- Alice wanted switch gear to patch the bug but
+	- There was an urgent bug in the production code that needs fixing now.
+- Alice needs to switch gear to patch the bug but
 	- she doesn't want to give up her *WIP* feature. However, the feature code is not in a working state.
 - What to do?
 
@@ -31,39 +31,45 @@ date: 2024 July
 	- Email everyone about the fix, and where to get the latest bug-free copy.
 	- Go back to the "feature" copy.
 	- Try to manually merge the WIP feature implementation onto the "bug_fix" copy.
-- Perhaps she didn't
-    - 🫡
+- Perhaps she didn't make a copy
+    - Pain
 
 
 # No Version Control
 ::: nonincremental
 - There are quite a few pitfalls with this approach:
-	1. One is out of luck if there wasn't a copy with the desired state.
-	2. This will be time/space-consuming if you have a lot of files.
-	3. This is also dangerous as one might overwrite the wrong file.
-	4. It is hard to make sure that the copies were merge cleanly.
-	5. It is impossible to coordinate these works between two or more persons, or to take over from another person.
-	6. It is impossible to remember what happened after a few months.
+1. **No backup**: If there wasn't a copy with the desired state, you're left with nothing but a bunch of useless files.
+2. **Time-consuming**: This method is slow and laborious, especially when dealing with large file systems.
+3. **Error-prone**: It's easy to overwrite the wrong file or lose important changes due to manual mistakes.
+4. **Difficult merges**: Ensuring that copies merge cleanly is a tedious process prone to errors.
+5. **Collaboration nightmare**: Coordinating works between multiple developers or taking over from someone else is impossible with this approach.
+6. **Forgetfulness**: After a few months, it's nearly impossible to remember the intricacies of the process and what changes were made.
 :::
 
 # What is Version Control System?
 
-- Version control is a system that records changes to a file or set of files over time so that one can recall specific versions later.
-- Using a VCS also generally means that if you screw things up or lose files, you can easily recover.
-- It allows code archaeology (when was the bug introduced? / how was it fixed? / how has this function evolved? / … ).
+- What Alice needs is something that helps her to go back in the history, diverge it, and merge it with her original timeline.
+- A VCS is like a time machine for your code. It lets you travel back in time to when things were working, or try different parallel timelines.
+- The ultimate "undo" button: "Don't worry about messing up, I've got this."
+- It allows code archaeology (how was the bug introduced? / how was it fixed? / how has this function evolved? / … ).
 - More complex workflows are built upon it (collaboration, permission, code review, and releasing).
 
 # What makes Git a Unique VCS?
 
-- Git is the most popular VCS. It is used by most code platforms (Github / Gitlab / Bitbucket) and open-source projects.
-- It was developed in 2005 to move the Linux Kernel maintenance away from propriety VCS. 
+- Git is the most popular VCS. > 95% market share.
+- It was developed in 2005 for maintaining one of the largest open-source project: the Linux Kernel 
+  - Emailing patches to a guy to merge -> Burnout -> proprietary VCS Software -> someone tried to reverse-engineer it -> No more free licenses -> "I will write my own VCS"
+
+. . . 
+
+> "Now, I’m dealing with the fall-out, and I’ll write my own kernel source tracking tool because I can’t use the best any more. That’s OK - I deal with my own problems, thank you very much." - Linus Torvalds
+
 - Its design emphasizes:
-    - **Speed**
-    - **Strong support for non-linear development (thousands of parallel branches)**
-    - **Data Integrity** (once added, hard to lose)
+    - **Efficiency**: Able to handle the kernel project, which has has millions lines of code and thousands of collaborators.
+    - **Strong support for non-linear development**: thousands of parallel branches.
     - **Simplicity**
-    - Fully distributed
-    - Ability to handle large project efficiently (speed and data size)
+    - Data Integrity: once added, hard to lose; everything has a unique id.
+    - Distributed: every local copy is a fully copy; most actions can be done without Internet.
 
 # Time Machine from Scratch
 
@@ -126,7 +132,7 @@ Branch is a movable pointer to a commit.
 
 ![](two-branches.png)
 
-When a branch is created, Git just writes down "testing: f30ab...". It does not copy files, computer, connect to Internet, whatever.
+When a branch is created, Git just writes down "testing: f30ab...". It does not copy files, compute, connect to Internet, whatever.
 
 Hence it is very fast and cheap to create new branch. It is encouraged to create a branch for each topic you work on.
 
@@ -140,11 +146,11 @@ Now if you make another commit
 
 ![](advance-testing.png)
 
-The pointer that HEAD points to, advance, while the other pointer stays the same.
+The pointer that HEAD points to, advanced, while the other pointer stays the same.
 
 . . .
 
-This is it. Most of the actions in Git are about manipulating these pointers and commits.
+This is it. Most of the actions in Git are just manipulating these pointers and commits.
 
 
 ![](meme.jpg)
@@ -202,7 +208,9 @@ The branch being merge into, "master", advanced. Now both the fix and the new fe
 
 # Branches are Disposable
 
-I mentioned in Git branches are cheap, and switching branch fast. Why is that important?
+I mentioned in Git branches are cheap (enabled by pointer), and switching branch fast (enabled by snapshot). Why is that important?
+
+. . . 
 
 Because you can experiment and context switch with very little consequences in a rapid manner. Like this:
 
@@ -212,12 +220,16 @@ In other VCS (or not VCS) where branching by copying files or creating new copy,
 
 . . . 
 
-Let's say you conclude the v2 works better than v1, and the dumbidea is actually brilliant. You can clean up the unused branches and still end up with a clean history.
+Let's say you conclude the v2 works better than v1, and the dumbidea is actually brilliant. You can prune the unused branch (C5 and C6) and share the clean history with the world. 
 
 ![](topic-branches-2.png)
+
+Locally, you can branch like crazy.
 
 # Take Away
 
 - VCS is better than no VCS.
 - Git is designed around extremely light-weight, fast, and disposable branching. Don't be afraid to create many branches and use them to your advantage.
-- Refer to the [Pro Git Book](https://git-scm.com/book/en/v2) to learn more.
+- Further Reading
+  - [The history of Git](https://blog.brachiosoft.com/en/posts/git/)
+  - [Pro Git Book](https://git-scm.com/book/en/v2)
