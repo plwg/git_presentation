@@ -49,36 +49,35 @@ date: 2024 July
 # What is Version Control System?
 
 - What Alice needs is something that helps her to go back in the history, diverge it, and merge it with her original timeline.
-- A VCS is like a time machine for your code. It lets you travel back in time to when things were working, or try different parallel timelines.
-- The ultimate "undo" button: "Don't worry about messing up, I've got this."
+- A VCS is like a time machine for your code. It lets you travel back in time, and try different parallel timelines.
 - It allows code archaeology (how was the bug introduced? / how was it fixed? / how has this function evolved? / … ).
 - More complex workflows are built upon it (collaboration, permission, code review, and releasing).
 
 # What makes Git a Unique VCS?
 
-- Git is the most popular VCS. > 95% market share.
+- Git is the most popular VCS. It has > 95% market share.
 - It was developed in 2005 for maintaining one of the largest open-source project: the Linux Kernel 
-  - Emailing patches to a guy to merge -> Burnout -> proprietary VCS Software -> someone tried to reverse-engineer it -> No more free licenses -> "I will write my own VCS"
+  - Emailing all patches to one guy to merge -> Burnout -> Proprietary VCS Software -> Someone tried to reverse-engineer it -> No more free licenses -> "I will write my own VCS"
 
 . . . 
 
 > "Now, I’m dealing with the fall-out, and I’ll write my own kernel source tracking tool because I can’t use the best any more. That’s OK - I deal with my own problems, thank you very much." - Linus Torvalds
 
 - Its design emphasizes:
-    - **Efficiency**: Able to handle the kernel project, which has has millions lines of code and thousands of collaborators.
+    - **Efficiency**: Able to handle large projects, which has can has millions lines of code and thousands of collaborators.
     - **Strong support for non-linear development**: thousands of parallel branches.
-    - **Simplicity**
-    - Data Integrity: once added, hard to lose; everything has a unique id.
+    - Data Integrity: once added, hard to lose; everything is checksum-ed.
     - Distributed: every local copy is a fully copy; most actions can be done without Internet.
 
 # Time Machine from Scratch
 
 - Now let's look at how Git does its thing.
 - We will start from the basic - how Git see our files.
-- Git sees every file it tracks in one of three states:
-  1. modified ("chaotic gathering")
-  2. staged ("people pose for a photo")
-  3. committed ("the photo taken")
+- Git sees every file in one of three states:
+  1. untracked ("outside of the room")
+  1. modified ("chaotic gathering in the room")
+  2. staged ("people posing for a photo")
+  3. **committed ("the photo taken")** ← what makes up git history
 
 . . .
 
@@ -89,7 +88,7 @@ date: 2024 July
 # What is a Commit?
 
 ::: nonincremental
-- Every time you commit, Git basically takes a picture of what all your files look like at that moment and stores a reference to that snapshot.
+- Every time you commit, Git takes a picture of what all your files look like at that moment and stores a reference to that snapshot.
 ![](snapshots.png)
 :::
 
@@ -100,29 +99,38 @@ date: 2024 July
 
 # What is actually inside a commit?
 
-These are all the information inside a commit:
+Here is how a single commit looks like inside:
 
-![](commit.png)  
+![](commit-and-tree.png)  
 
-. . .
+. . . 
 
-- tree: a key to a map of all the correct files
-- parent: a unique key to the commit this one based on. How many?
-- author: who originally wrote the code, and a timestamp
-- committer: who applied the code, and a timestamp. Why?
-- commit message
-
-Git takes all these information and generates a new unique key (4ea0...)
-
-# What is a Branch?
-
-Because for each commit we know its parents, we can construct the history
+And here is what happens if we made another one:
 
 ![](commits-and-parents.png)
 
+How many parents can a commit have?
+
+. . . 
+
+Another way to look at it together:
+
+![](data-model-3.png)
+
+Notice how:
+
+1. Same file is referenced repeatedly.
+2. The tree can point to another tree, representing nested directory.
+
+# What is a Branch?
+
+So for each commit we know its parents, we can construct the history.
+
 . . .
 
-But having a history does not yet help our pickle. We need to be able to diverge the history, not overwrite it.
+But Alice needs is more than a single history that she can go back and forth in. She needs to diverge, make changes, and merge the history.
+
+. . .
 
 This is where branches come in.
 
@@ -130,15 +138,17 @@ This is where branches come in.
 
 Branch is a movable pointer to a commit.
 
-![](two-branches.png)
+![](data-model-4.png)
 
-When a branch is created, Git just writes down "testing: f30ab...". It does not copy files, compute, connect to Internet, whatever.
+When a branch is created, Git just writes down "test is at cac0ca...". It does not change the underlying files, copy files, compute, connect to Internet, whatever.
+
+**Think of branching as making a bookmark, not copy-pasting.**
 
 Hence it is very fast and cheap to create new branch. It is encouraged to create a branch for each topic you work on.
 
 But how does Git know which branch you are on?
 
-The answer is another pointer pointing to one of the pointers.
+The answer is another pointer pointing to the branch pointer.
 
 ![](head-to-testing.png)
 
@@ -164,7 +174,7 @@ This is it. Most of the actions in Git are just manipulating these pointers and 
 - checkout/switch: move HEAD to point to another commit or branch
 - reset: point current branch to an earlier commit.
 - create a commit: take another snapshot that use current commit as a parent. Move the current branch to it.
-- merge: create a special kind of commit that combine two parents. Move the current branch to it.
+- merge: create a commit that combine two parents. Move the current branch to it.
 
 # Pickle Revisited
 
@@ -174,31 +184,35 @@ Now let's go back to our earlier pickle example. Assuming Alice starts her work 
 
 . . . 
 
-She creates a new branch to track her feature works.
+She creates a new branch ("iss53") to track her feature works.
 
 ![](basic-branching-2.png)
 
-And makes a commit.
+And do some works on that branch.
 
 ![](basic-branching-3.png)
 
 . . . 
 
-Now if there is bug now, she can easily checkout master (move HEAD there), create a hotfix branch (pointer) and commit a fix. Her feature works are intact.
+Now, if there is bug now, she can easily checkout "master", create a "hotfix" branch and commit a fix. Her feature works are intact on "iss53".
 
 ![](basic-branching-4.png)
 
-Then she can deploy the fix by merging master into hotfix. The merge is straight-forward because the common ancestor of "master" and "hotfix" is "master". Git just uses the newer "hotfix" as the parent.
+Then she can deploy the fix by merging "master" into "hotfix". Since Git can reach "hotfix" by fast-forwarding "master", it does that. "master" now is same as "hotfix".
 
 ![](basic-branching-5.png)
 
 . . .
 
-Now crisis averted Alice goes back to finish her feature. Now it is ready to be integrated into master.
+Now crisis averted Alice deletes the "hotfix" branch, and goes back to finish her feature. After few days, it is ready to be integrated into master.
 
 ![](basic-branching-6.png)
 
-Since the history has diverge, the new commit will have two parents. If each's change relative to the ancestor is not overlapping, git will merge them automatically. If it overlaps, then it is a conflict and it have to be fixed manually.
+Since the history has diverged, no fast-forwarding this time. The new commit will have two parents. 
+
+If each's change relative to the ancestor is not overlapping (i.e. different files), git will merge them automatically. If it overlaps, then it is a conflict and Git will ask which side you want. 
+
+Most of time things merge cleanly automatically if the code is compartmentalized well.
 
 ![](basic-merging-1.png)
 
@@ -206,9 +220,11 @@ The branch being merge into, "master", advanced. Now both the fix and the new fe
 
 ![](basic-merging-2.png)
 
-# Branches are Disposable
+Notice in this case how Alice can be a team of people all these will work the same!
 
-I mentioned in Git branches are cheap (enabled by pointer), and switching branch fast (enabled by snapshot). Why is that important?
+# Local Branches are Disposable
+
+Git branches are cheap (enabled by pointer), and switching branch fast (enabled by snapshot). Why is that important?
 
 . . . 
 
@@ -216,20 +232,23 @@ Because you can experiment and context switch with very little consequences in a
 
 ![](topic-branches-1.png)
 
-In other VCS (or not VCS) where branching by copying files or creating new copy, this could take minutes each time you diverge or switch to another branch.
+In other VCS (or not VCS) where branching by copying files and switching by adding up deltas, it could take minutes each time you diverge or switch to another branch.
 
 . . . 
 
-Let's say you conclude the v2 works better than v1, and the dumbidea is actually brilliant. You can prune the unused branch (C5 and C6) and share the clean history with the world. 
+Let's say you conclude the v2 works better than v1, and the dumbidea is actually brilliant. You can delete the unused branch (throwing away C5 and C6).
 
 ![](topic-branches-2.png)
 
-Locally, you can branch like crazy.
+It’s important to remember these actions are **completely local**. When you’re branching and merging, everything is done offline — there is no communication with the server unless you requested it to be pushed.
+
+**Have a lot of local branches. Dump the bad ones, polish the good ones, and share them when ready.**
 
 # Take Away
 
 - VCS is better than no VCS.
-- Git is designed around extremely light-weight, fast, and disposable branching. Don't be afraid to create many branches and use them to your advantage.
+- Git is designed around fast switching, and light-weight, disposable branching. 
+- Don't be afraid to create many local branches and use them to your advantage.
 - Further Reading
   - [The history of Git](https://blog.brachiosoft.com/en/posts/git/)
   - [Pro Git Book](https://git-scm.com/book/en/v2)
