@@ -7,7 +7,7 @@ date: 2024 July
 
 - Today's talk is **not** about specific commands / code.
 
-- The goal is to talk about Git's design decision, and from there understand how we should use it.
+- I want to talk about some of Git's design decision, and from there talk about how we could take advantage of it.
 
 - We will start with a scenario, then things will get visual and technical.
 
@@ -56,12 +56,12 @@ date: 2024 July
 # What makes Git a Unique VCS?
 
 - Git is the most popular VCS. It has > 95% market share.
-- It was developed in 2005 for maintaining one of the largest open-source project: the Linux Kernel 
+- It was first developed in 2005 for maintaining one of the largest open-source projects: the Linux Kernel.
   - Emailing all patches to one guy to merge -> Burnout -> Proprietary VCS Software -> Someone tried to reverse-engineer it -> No more free licenses -> "I will write my own VCS"
 
 . . . 
 
-> "Now, I’m dealing with the fall-out, and I’ll write my own kernel source tracking tool because I can’t use the best any more. That’s OK - I deal with my own problems, thank you very much." - Linus Torvalds
+    "Now, I’m dealing with the fall-out, and I’ll write my own kernel source tracking tool because I can’t use the best any more. That’s OK - I deal with my own problems, thank you very much." - Linus Torvalds
 
 - Its design emphasizes:
     - **Efficiency**: Able to handle large projects, which has can has millions lines of code and thousands of collaborators.
@@ -83,19 +83,28 @@ date: 2024 July
 
 ![](areas.png)
 
-- Quiz: Why do we need a staging area? Why not just "save"?
+Eventually, we want to put things we care about into the committed state.
+
+    Quiz: Why do we need a staging area? Why not just "save"?
 
 # What is a Commit?
 
 ::: nonincremental
-- Every time you commit, Git takes a picture of what all your files look like at that moment and stores a reference to that snapshot.
+- Every time you commit, Git takes a picture of what all your files look like at that moment and stores a reference to that snapshot (so that it can be retrieved).
+
 ![](snapshots.png)
 :::
 
-- If the file didn't change, Git store a pointer to the previous version.
-- For files that changed, Git will store the whole file again not just the difference*. Why?  
+- If the file didn't change, Git points the reference at the previous version.
+- For files that changed, Git will prefer storing the whole file again not just the difference*.
+
+. . .
+
 ![](deltas.png)  
-  - delta is storage friendly; snapshot is access friendly
+
+Why not do this?
+
+**Delta is space-friendly; full file is speed-friendly.** Git wants to make recreating the snapshot data fast.
 
 # What is actually inside a commit?
 
@@ -109,7 +118,7 @@ And here is what happens if we made another one:
 
 ![](commits-and-parents.png)
 
-Quiz: How many parents can a commit have?
+    Quiz: How many parents can a commit have?
 
 . . . 
 
@@ -119,7 +128,7 @@ Another way to look at it together:
 
 As we mentioned, duplicated data is not duplicatly stored, but referenced. Non-duplicated data is stored fully.
 
-This makes getting stuffs from a commit fast.
+When we check out a commit, Git use the tree to find all data, decompressed them, and use that to populate our folder.
 
 Notice how:
 
@@ -150,7 +159,7 @@ When a branch is created, Git just writes down "test is at cac0ca...". It does n
 
 **Think of branching as making a bookmark, not copy-pasting.**
 
-**Git is optimized for fast and cheap branching**. It is encouraged to create a branch for each topic you work on.
+**Because of this, Git is optimized for fast and cheap branching**. People often create and delete multiple branches in a day, one for each topic they work on.
 
 But how does Git know which branch you are on?
 
@@ -158,7 +167,7 @@ The answer is another pointer pointing to the branch pointer.
 
 ![](head-to-testing.png)
 
-A special pointer, HEAD, always points to the current branch.
+A special pointer, HEAD, marks the current branch.
 
 Now if you make another commit 
 
@@ -166,11 +175,13 @@ Now if you make another commit
 
 The pointer that HEAD points to, advanced, while the other pointer stays the same.
 
-![](8x0jyo.jpg)
+![](meme.jpg)
 
-Quiz: You checked out a commit, Git says you are now in "detached HEAD state". What happened?!
+    Quiz: You checked out a commit, Git says you are now in "detached HEAD state". What happened?!
 
 This is it. Many actions in Git are just moving these pointers around.
+
+For example:
 
 - checkout/switch: move HEAD to point to another commit or branch
 - reset: point current branch to an earlier commit.
@@ -179,7 +190,7 @@ This is it. Many actions in Git are just moving these pointers around.
 
 # Pickle Revisited
 
-Now let's go back to our earlier pickle example. Assuming Ross starts his work when there was a master branch, where it tracks the version in prod.
+Now let's go back to our earlier pickle example. Assuming Ross starts his work when there was a master branch, tracking prod.
 
 ![](basic-branching-1.png)
 
@@ -189,13 +200,13 @@ He creates a new branch ("iss53") to track his feature works.
 
 ![](basic-branching-2.png)
 
-And do some works on that branch.
+And do some works (C3) on that branch.
 
 ![](basic-branching-3.png)
 
 . . . 
 
-Now, if there is bug now, he can easily checkout "master", create a "hotfix" branch and commit a fix. His feature works are intact on "iss53".
+Now, if there is bug now, he can easily checkout "master", create a "hotfix" branch and commit a fix (C4). His feature works are intact on "iss53".
 
 ![](basic-branching-4.png)
 
@@ -205,23 +216,23 @@ Then he can deploy the fix by merging "master" into "hotfix". Since Git can reac
 
 . . .
 
-Now crisis averted Ross deletes the "hotfix" branch, and goes back to finish his feature. After few days, it is ready to be integrated into master.
+Now crisis averted Ross deletes the "hotfix" branch, and goes back to finish his feature (C5). After few days, it is ready to be integrated into master.
 
 ![](basic-branching-6.png)
 
-Since the history has diverged, no fast-forwarding this time. The new commit will have two parents. 
+Since the history has diverged, "master" cannot reach "iss53" by fast-forward. The new commit will have two parents.
 
-If each's change relative to the ancestor (C2) is not overlapping (i.e. different files), git will merge them automatically. If it overlaps, then it is a conflict and Git will ask which side you want. 
+If each's change relative to the ancestor (C2) is not overlapping (i.e. different files / lines), Git will merge them automatically. If it overlaps, then it is a conflict and Git will ask which side you want.
 
 Most of time things merge cleanly automatically if the code is compartmentalized well.
 
 ![](basic-merging-1.png)
 
-The branch being merge into, "master", advanced. Now both the fix and the new feature are in prod!
+The branch being merged into, "master", advanced. Now both the fix and the new feature are in prod!
 
 ![](basic-merging-2.png)
 
-Notice in this case how Ross can be a team of people all these will work the same!
+Notice in this case how Ross can be a team of people all these will still work well!
 
 # Local Branches are Disposable
 
@@ -229,7 +240,7 @@ Git branches are cheap (enabled by pointer), and switching branch fast (enabled 
 
 . . . 
 
-Because you can experiment and context switch with very little consequences in a rapid manner. Like this:
+Because one can experiment and context switch with very little consequences in a rapid manner. Like this:
 
 ![](topic-branches-1.png)
 
@@ -248,6 +259,7 @@ It’s important to remember these actions are **completely local**. When you’
 # Take Away
 
 - VCS is better than no VCS.
+- A commit in Git is a contextual snapshot; chain of them forms the history.
 - Git is designed around fast switching, and light-weight, disposable branching. 
 - Don't be afraid to create many local branches and use them to your advantage.
 - Further Reading
