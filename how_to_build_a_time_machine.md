@@ -13,17 +13,17 @@ date: 2024 July
 
 # A Typical Pickle
 
-- Alice was working on a new feature for her project.
-- She was 42% done when
-	- Her boss, Bob, sent her a message on Teams.
+- Ross was working on a new feature for his project.
+- He was 42% done when
+	- His boss, Joey, sent him a message on Teams.
 	- There was an urgent bug in the production code that needs fixing now.
-- Alice needs to switch gear to patch the bug but
-	- she doesn't want to give up her *WIP* feature. However, the feature code is not in a working state.
+- Ross needs to switch gear to patch the bug but
+	- He doesn't want to give up his *WIP* feature. However, the feature code is not in a working state.
 - What to do?
 
 # No Version Control
 
-- Perhaps Alice copied the files before starting working on the new feature.
+- Perhaps Ross copied the files before starting working on the new feature.
 	- Save the feature works into a "feature" copy.
 	- Find the newest clean copy (without the feature but one that contains the bug).
 	- Make another copy, "bug_fix", of it.
@@ -31,7 +31,7 @@ date: 2024 July
 	- Email everyone about the fix, and where to get the latest bug-free copy.
 	- Go back to the "feature" copy.
 	- Try to manually merge the WIP feature implementation onto the "bug_fix" copy.
-- Perhaps she didn't make a copy
+- Perhaps he didn't make a copy
     - Pain
 
 
@@ -48,7 +48,7 @@ date: 2024 July
 
 # What is Version Control System?
 
-- What Alice needs is something that helps her to go back in the history, diverge it, and merge it with her original timeline.
+- What Ross needs is something that helps him to go back in the history, diverge it, and merge it with his original timeline.
 - A VCS is like a time machine for your code. It lets you travel back in time, and try different parallel timelines.
 - It allows code archaeology (how was the bug introduced? / how was it fixed? / how has this function evolved? / … ).
 - More complex workflows are built upon it (collaboration, permission, code review, and releasing).
@@ -71,19 +71,19 @@ date: 2024 July
 
 # Time Machine from Scratch
 
-- Now let's look at how Git does its thing.
+- Now let's try to understand Git.
 - We will start from the basic - how Git see our files.
-- Git sees every file in one of three states:
+- Git sees every file in one of four states:
   1. untracked ("outside of the room")
   1. modified ("chaotic gathering in the room")
-  2. staged ("people posing for a photo")
-  3. **committed ("the photo taken")** ← what makes up git history
+  2. staged ("people posing for a photo; adjusting frame")
+  3. **committed ("the photo taken")** ← objective of the other steps
 
 . . .
 
 ![](areas.png)
 
-- Why do we need a staging area? Why not just "save"?
+- Quiz: Why do we need a staging area? Why not just "save"?
 
 # What is a Commit?
 
@@ -109,7 +109,7 @@ And here is what happens if we made another one:
 
 ![](commits-and-parents.png)
 
-How many parents can a commit have?
+Quiz: How many parents can a commit have?
 
 . . . 
 
@@ -117,18 +117,24 @@ Another way to look at it together:
 
 ![](data-model-3.png)
 
+As we mentioned, duplicated data is not duplicatly stored, but referenced. Non-duplicated data is stored fully.
+
+This makes getting stuffs from a commit fast.
+
 Notice how:
 
-1. Same file is referenced repeatedly.
-2. The tree can point to another tree, representing nested directory.
+1. A commit has **snapshot**: a full map to find all the correct pieces of data!
+2. A commit has **context**: author, timestamp, and commit message (who, when and why?)
+3. A commit has **history**: always points to its parents; knows what comes before.
+
 
 # What is a Branch?
 
-So for each commit we know its parents, we can construct the history.
+So commit is contextual snapshot, and a chain of them forms a history.
 
 . . .
 
-But Alice needs is more than a single history that she can go back and forth in. She needs to diverge, make changes, and merge the history.
+How about multiple histories? Ross needs it.
 
 . . .
 
@@ -144,7 +150,7 @@ When a branch is created, Git just writes down "test is at cac0ca...". It does n
 
 **Think of branching as making a bookmark, not copy-pasting.**
 
-Hence it is very fast and cheap to create new branch. It is encouraged to create a branch for each topic you work on.
+**Git is optimized for fast and cheap branching**. It is encouraged to create a branch for each topic you work on.
 
 But how does Git know which branch you are on?
 
@@ -152,39 +158,34 @@ The answer is another pointer pointing to the branch pointer.
 
 ![](head-to-testing.png)
 
+A special pointer, HEAD, always points to the current branch.
+
 Now if you make another commit 
 
 ![](advance-testing.png)
 
 The pointer that HEAD points to, advanced, while the other pointer stays the same.
 
-. . .
+![](8x0jyo.jpg)
 
-This is it. Most of the actions in Git are just manipulating these pointers and commits.
+Quiz: You checked out a commit, Git says you are now in "detached HEAD state". What happened?!
 
+This is it. Many actions in Git are just moving these pointers around.
 
-![](meme.jpg)
-
-- commit: snapshot
-- branch: pointer to snapshot
-- HEAD: pointer to branch
-- current branch: the branch being pointed to by HEAD
-- create a new branch: create a new pointer to existing snapshot
-- delete a branch: delete an existing pointer
 - checkout/switch: move HEAD to point to another commit or branch
 - reset: point current branch to an earlier commit.
 - create a commit: take another snapshot that use current commit as a parent. Move the current branch to it.
-- merge: create a commit that combine two parents. Move the current branch to it.
+- merge: try to create a commit that combine two parents. Move the current branch to it.
 
 # Pickle Revisited
 
-Now let's go back to our earlier pickle example. Assuming Alice starts her work when there was a master branch, where it tracks the version in prod.
+Now let's go back to our earlier pickle example. Assuming Ross starts his work when there was a master branch, where it tracks the version in prod.
 
 ![](basic-branching-1.png)
 
 . . . 
 
-She creates a new branch ("iss53") to track her feature works.
+He creates a new branch ("iss53") to track his feature works.
 
 ![](basic-branching-2.png)
 
@@ -194,23 +195,23 @@ And do some works on that branch.
 
 . . . 
 
-Now, if there is bug now, she can easily checkout "master", create a "hotfix" branch and commit a fix. Her feature works are intact on "iss53".
+Now, if there is bug now, he can easily checkout "master", create a "hotfix" branch and commit a fix. His feature works are intact on "iss53".
 
 ![](basic-branching-4.png)
 
-Then she can deploy the fix by merging "master" into "hotfix". Since Git can reach "hotfix" by fast-forwarding "master", it does that. "master" now is same as "hotfix".
+Then he can deploy the fix by merging "master" into "hotfix". Since Git can reach "hotfix" by fast-forwarding "master", it does that. "master" now is same as "hotfix".
 
 ![](basic-branching-5.png)
 
 . . .
 
-Now crisis averted Alice deletes the "hotfix" branch, and goes back to finish her feature. After few days, it is ready to be integrated into master.
+Now crisis averted Ross deletes the "hotfix" branch, and goes back to finish his feature. After few days, it is ready to be integrated into master.
 
 ![](basic-branching-6.png)
 
 Since the history has diverged, no fast-forwarding this time. The new commit will have two parents. 
 
-If each's change relative to the ancestor is not overlapping (i.e. different files), git will merge them automatically. If it overlaps, then it is a conflict and Git will ask which side you want. 
+If each's change relative to the ancestor (C2) is not overlapping (i.e. different files), git will merge them automatically. If it overlaps, then it is a conflict and Git will ask which side you want. 
 
 Most of time things merge cleanly automatically if the code is compartmentalized well.
 
@@ -220,7 +221,7 @@ The branch being merge into, "master", advanced. Now both the fix and the new fe
 
 ![](basic-merging-2.png)
 
-Notice in this case how Alice can be a team of people all these will work the same!
+Notice in this case how Ross can be a team of people all these will work the same!
 
 # Local Branches are Disposable
 
